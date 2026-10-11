@@ -6,11 +6,15 @@ if (NOT ${SDL2_FOUND})
     set(sdl2_ios_controller_menu_press_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/sdl2-ios-controller-menu-press.patch)
     set(sdl2_ios_controller_menu_press_apply_patch_command ${CMAKE_COMMAND} -Dpatch_file=${sdl2_ios_controller_menu_press_patch_file} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/git-patch.cmake)
 
+    set(sdl2_ios_scenes_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/sdl2-ios-scenes.patch)
+    set(sdl2_ios_scenes_apply_patch_command ${CMAKE_COMMAND} -Dpatch_file=${sdl2_ios_scenes_patch_file} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/git-patch.cmake)
+
     FetchContent_Declare(
         SDL2
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
         GIT_TAG release-2.32.10
         PATCH_COMMAND ${sdl2_ios_controller_menu_press_apply_patch_command}
+            COMMAND ${sdl2_ios_scenes_apply_patch_command}
         OVERRIDE_FIND_PACKAGE
     )
     FetchContent_MakeAvailable(SDL2)

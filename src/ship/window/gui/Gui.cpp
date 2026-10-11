@@ -432,13 +432,14 @@ void Gui::ImGuiWMNewFrame() {
         case WindowBackend::FAST3D_SDL_OPENGL:
         case WindowBackend::FAST3D_SDL_METAL:
             ImGui_ImplSDL2_NewFrame();
-#if defined(__IOS__)
+#if defined(__APPLE__)
             // ImGui's SDL2 backend does not query the SDL Metal renderer and
-            // therefore leaves DisplayFramebufferScale at 1 on iOS even when
-            // the CAMetalLayer is using the screen's nativeScale. Supply the
+            // therefore leaves DisplayFramebufferScale at 1 on Apple platforms even when
+            // the CAMetalLayer is using the screen's native pixel scale. Supply the
             // real point-to-pixel ratio so draw data targets the native
             // drawable while input and menu layout remain in logical points.
-            if (mImpl.Metal.Renderer != nullptr && mImpl.Metal.Window != nullptr) {
+            if (Context::GetInstance()->GetWindow()->GetWindowBackend() == WindowBackend::FAST3D_SDL_METAL &&
+                mImpl.Metal.Renderer != nullptr && mImpl.Metal.Window != nullptr) {
                 int logicalWidth = 0;
                 int logicalHeight = 0;
                 int drawableWidth = 0;
@@ -594,8 +595,8 @@ void Gui::DrawMenu() {
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
-#if defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV)
-    // Window::GetWidth/Height report the Metal drawable size on iOS/tvOS so
+#if defined(__APPLE__)
+    // Window::GetWidth/Height report the Metal drawable size on Apple platforms so
     // Fast3D can render at native resolution. ImGui layout is expressed in
     // logical points, however, so size the desktop/dockspace from its viewport.
     ImGui::SetNextWindowSize(viewport->WorkSize);
@@ -767,7 +768,7 @@ void Gui::CalculateGameViewport() {
     mainPos.x -= mTemporaryWindowPos.x;
     mainPos.y -= mTemporaryWindowPos.y;
     ImVec2 size = ImGui::GetContentRegionAvail();
-#if defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV)
+#if defined(__APPLE__)
     // The game is presented in logical points but rendered into the native
     // framebuffer. Keeping these coordinate spaces separate makes the complete
     // picture fit the device without sacrificing render quality.
@@ -874,9 +875,9 @@ void Gui::DrawGame() {
         }
     }
 
-#if defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV)
+#if defined(__APPLE__)
     // Desktop pixel-perfect settings can request a presentation rectangle in
-    // physical pixels that is larger than the iOS/tvOS logical-point viewport.
+    // physical pixels that is larger than the Apple logical-point viewport.
     // Preserve the high-resolution game framebuffer, but aspect-fit its final
     // presentation so the whole picture remains visible.
     if (size.x > availableSize.x || size.y > availableSize.y || pos.x < 0.0f || pos.y < 0.0f) {
