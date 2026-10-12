@@ -9,6 +9,8 @@
 
 #include "fast/backends/gfx_metal.h"
 
+#include <TargetConditionals.h>
+
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
@@ -820,7 +822,10 @@ void GfxRenderingAPIMetal::StartDrawToFramebuffer(int fb_id, float noise_scale) 
         fb.mCommandEncoder = fb.mCommandBuffer->renderCommandEncoder(fb.mRenderPassDescriptor);
         std::string fbce_label = fmt::format("FrameBuffer {} Command Encoder", fb_id);
         fb.mCommandEncoder->setLabel(NS::String::string(fbce_label.c_str(), NS::UTF8StringEncoding));
+// Simulator GPU feature sets reject depth clamping; retain their default clip mode.
+#if !TARGET_OS_SIMULATOR
         fb.mCommandEncoder->setDepthClipMode(MTL::DepthClipModeClamp);
+#endif
     }
 
     if (noise_scale != 0.0f) {
@@ -860,7 +865,9 @@ void GfxRenderingAPIMetal::ClearFramebuffer(bool color, bool depth) {
 
     std::string fbce_label = fmt::format("FrameBuffer {} Command Encoder After Clear", mCurrentFramebuffer);
     framebuffer.mCommandEncoder->setLabel(NS::String::string(fbce_label.c_str(), NS::UTF8StringEncoding));
+#if !TARGET_OS_SIMULATOR
     framebuffer.mCommandEncoder->setDepthClipMode(MTL::DepthClipModeClamp);
+#endif
     framebuffer.mCommandEncoder->setViewport(*framebuffer.mViewport);
     framebuffer.mCommandEncoder->setScissorRect(*framebuffer.mScissorRect);
 
@@ -1071,7 +1078,9 @@ void GfxRenderingAPIMetal::CopyFramebuffer(int fb_dst_id, int fb_src_id, int src
 
     std::string fbce_label = fmt::format("FrameBuffer {} Command Encoder After Copy", fb_src_id);
     source_framebuffer.mCommandEncoder->setLabel(NS::String::string(fbce_label.c_str(), NS::UTF8StringEncoding));
+#if !TARGET_OS_SIMULATOR
     source_framebuffer.mCommandEncoder->setDepthClipMode(MTL::DepthClipModeClamp);
+#endif
     source_framebuffer.mCommandEncoder->setViewport(*source_framebuffer.mViewport);
     source_framebuffer.mCommandEncoder->setScissorRect(*source_framebuffer.mScissorRect);
 
